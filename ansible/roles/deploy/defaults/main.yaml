@@ -3,5 +3,5 @@ db_password: userpassword
 db_name: userdb
 db_port: 5432
 git_dir: /opt/sample-django
-git_url: "https://github.com/Sog0/sample-django.git"
+git_url: "https://github.com/Sog0/sample-django-rebuild.git"
 branch: "main"
