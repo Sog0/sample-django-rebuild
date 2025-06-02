@@ -1,0 +1,13 @@
+---
+- name: Ensure Nginx is installed
+  ansible.builtin.dnf:
+    name: nginx
+    state: installed
+
+- name: Deploy custom Nginx configuration
+  ansible.builtin.template:
+    src: roles/webserver-setup/templates/nginx.conf.j2
+    dest: /etc/nginx/conf.d/sample-django.conf
+    owner: ec2-user
+    group: ec2-user
+    mode: '0644'

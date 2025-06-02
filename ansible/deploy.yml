@@ -1,0 +1,7 @@
+---
+- name: Pull last changes from repository
+  hosts: web
+  become: true
+  remote_user: ec2-user
+  roles:
+    - deploy

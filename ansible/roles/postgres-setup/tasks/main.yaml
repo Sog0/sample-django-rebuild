@@ -1,0 +1,102 @@
+- name: Update YUM cache using dnf
+  ansible.builtin.command: dnf makecache
+  changed_when: false
+
+- name: Install required system packages
+  ansible.builtin.package:
+    name:
+      - python3-pip
+    state: present
+
+- name: Install psycopg2-binary via pip
+  ansible.builtin.pip:
+    name: psycopg2-binary
+
+- name: Install PostgreSQL 15 and server package
+  ansible.builtin.package:
+    name:
+      - postgresql15
+      - postgresql15-server
+    state: present
+
+- name: Check if PostgreSQL is initialized
+  ansible.builtin.stat:
+    path: /var/lib/pgsql/data/pg_hba.conf
+  register: pg_data
+
+- name: Initialize PostgreSQL if not initialized
+  ansible.builtin.command: postgresql-setup --initdb
+  args:
+    creates: /var/lib/pgsql/data/pg_hba.conf
+  when: not pg_data.stat.exists
+
+- name: Enable and start PostgreSQL service
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: true
+
+- name: Set listen_addresses = '*'
+  ansible.builtin.lineinfile:
+    path: /var/lib/pgsql/data/postgresql.conf
+    regexp: '^#?listen_addresses\s*='
+    line: "listen_addresses = '*'"
+  notify: Restart PostgreSQL
+
+- name: Ensure pg_hba.conf allows external MD5 access
+  ansible.builtin.lineinfile:
+    path: /var/lib/pgsql/data/pg_hba.conf
+    line: "host    all    all    0.0.0.0/0    md5"
+    insertafter: EOF
+  notify: Restart PostgreSQL
+
+- name: Restart PostgreSQL to apply config changes
+  ansible.builtin.service:
+    name: postgresql
+    state: restarted
+
+- name: Ensure PostgreSQL is accepting connections
+  wait_for:
+    host: 127.0.0.1
+    port: 5432
+    delay: 5
+    timeout: 30
+
+- name: Create PostgreSQL user
+  community.postgresql.postgresql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+  become_user: postgres
+
+- name: Create PostgreSQL database
+  community.postgresql.postgresql_db:
+    name: "{{ db_name }}"
+  become_user: postgres
+
+- name: Grant privileges on database to user
+  community.postgresql.postgresql_privs:
+    db: "{{ db_name }}"
+    type: database
+    privs: ALL
+    roles: "{{ db_user }}"
+  become_user: postgres
+
+- name: Grant privileges on public schema to user
+  community.postgresql.postgresql_privs:
+    db: "{{ db_name }}"
+    type: schema
+    objs: public
+    privs: ALL
+    roles: "{{ db_user }}"
+  become_user: postgres
+
+- name: Ensure md5 rule exists for specific user in pg_hba
+  community.postgresql.postgresql_pg_hba:
+    dest: /var/lib/pgsql/data/pg_hba.conf
+    contype: host
+    users: "{{ db_user }}"
+    source: 0.0.0.0/0
+    databases: all
+    method: md5
+    create: true
+  notify: Restart PostgreSQL

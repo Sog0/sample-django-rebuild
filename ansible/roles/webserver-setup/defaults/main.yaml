@@ -1,0 +1,8 @@
+django_project_dir: /opt/sample-django
+django_project_root: /opt/sample-django
+
+env_file_path: "{{ django_project_dir }}/.env"
+
+upstream_host: 127.0.0.1
+upstream_port: 8080
+domain_name: "_"

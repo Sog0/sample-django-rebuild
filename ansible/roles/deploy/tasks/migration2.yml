@@ -1,0 +1,31 @@
+---
+- name: Initialize Python virtual environment
+  ansible.builtin.command: python3 -m venv /opt/sample-django/venv
+  args:
+    creates: /opt/sample-django/venv
+
+- name: Install Python dependencies for the application
+  ansible.builtin.pip:
+    requirements: /opt/sample-django/requirements.txt
+    virtualenv: /opt/sample-django/venv
+
+- name: Ensure manage.py is executable
+  become: yes
+  ansible.builtin.file:
+    path: /opt/sample-django/manage.py
+    mode: '0755'
+
+- name: Apply database migrations
+  community.general.django_manage:
+    command: migrate
+    project_path: /opt/sample-django
+    virtualenv: /opt/sample-django/venv
+  environment:
+    DATABASE_URL: "postgres://{{ db_user }}:{{ db_password }}@{{ db_host }}:5432/{{ db_name }}"
+    
+- name: restart gunicorn
+  service:
+    name: gunicorn
+    state: restarted
+    daemon_reload: yes
+  notify: Restart the nginx service

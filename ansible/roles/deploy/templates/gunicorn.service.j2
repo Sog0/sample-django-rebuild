@@ -1,0 +1,17 @@
+[Unit]
+Description=Gunicorn django
+After=network.target
+
+[Service]
+User=ec2-user
+Group=ec2-user
+
+WorkingDirectory=/opt/sample-django
+
+Environment="PATH=/opt/sample-django/venv/bin"
+EnvironmentFile=/opt/sample-django/.env
+
+ExecStart=/opt/sample-django/venv/bin/gunicorn --bind unix:/opt/sample-django/gunicorn.sock mysite.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

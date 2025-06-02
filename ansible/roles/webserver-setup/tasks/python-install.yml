@@ -1,0 +1,7 @@
+- name: Ensure Python and related tools are available
+  ansible.builtin.yum:
+    name:
+      - python3
+      - python3-pip
+      - python3-virtualenv
+    state: installed

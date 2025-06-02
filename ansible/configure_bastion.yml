@@ -1,0 +1,13 @@
+---
+- name: Configure bastion host
+  hosts: bastion
+  become: true
+
+  tasks:
+    - name: Copy private key to remote server
+      copy:
+        content: "{{ lookup('file', 'ansible.id_rsa') }}"
+        dest: /home/ec2-user/.ssh/ansible.id_rsa
+        owner: ec2-user
+        group: ec2-user
+        mode: '0600'

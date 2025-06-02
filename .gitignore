@@ -1,3 +1,11 @@
 db.sqlite3
 *.pyc
 staticfiles/
+*.terraform
+*.tfstate
+*.tfstate.*
+*.terraform.*
+*.id_rsa*
+id_rsa*
+inventory.ini
+ansible.id_rsa

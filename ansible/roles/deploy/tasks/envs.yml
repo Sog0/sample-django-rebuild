@@ -1,0 +1,6 @@
+---
+- name: Generate .env file
+  template:
+    src: roles/deploy/templates/app.env.j2
+    dest: "/opt/sample-django/.env"
+    mode: 0640

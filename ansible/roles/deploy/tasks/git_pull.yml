@@ -1,0 +1,13 @@
+---
+- name: Ensure git is installed
+  ansible.builtin.package:
+    name: git
+    state: present
+  
+- name: Clone or update repository
+  git:
+    repo: "{{ git_url }}"
+    dest: "{{ git_dir }}"
+    version: "{{ branch }}"
+    update: yes
+    force: yes

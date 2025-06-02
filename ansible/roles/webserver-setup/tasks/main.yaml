@@ -1,0 +1,3 @@
+---
+- import_tasks: python-install.yml
+- import_tasks: nginx-install.yml

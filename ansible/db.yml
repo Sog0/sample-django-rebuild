@@ -1,0 +1,7 @@
+---
+- name: Deploy Postgresql database
+  hosts: db
+  become: true
+  remote_user: ec2-user
+  roles:
+    - postgres-setup
